@@ -1,0 +1,102 @@
+
+{% extends "base.html" %}
+
+{% block title %}Maintenance Planner | PlantCare{% endblock %}
+{% block page_name %}Maintenance Planner{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">PREVENTIVE MAINTENANCE</p>
+        <h1>Maintenance Planner</h1>
+        <p class="subtitle">Identify upcoming maintenance and record completed work.</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Equipment</th>
+                <th>Strategy</th>
+                <th>Current Usage</th>
+                <th>Threshold</th>
+                <th>Next Maintenance</th>
+                <th>Status</th>
+                <th>Record Work</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for item in equipment %}
+            <tr>
+                <td>
+                    <strong>{{ item.equipment_code }}</strong><br>
+                    {{ item.name }}
+                </td>
+                <td>{{ item.maintenance_type }}</td>
+                <td>{{ item.current_usage }}</td>
+                <td>{{ item.usage_threshold }}</td>
+                <td>{{ item.next_maintenance_date }}</td>
+                <td>
+                    <span class="badge
+                    {% if item.maintenance_status == 'OVERDUE' %}
+                        badge-danger
+                    {% elif item.maintenance_status == 'DUE SOON' %}
+                        badge-warning
+                    {% else %}
+                        badge-success
+                    {% endif %}">
+                        {{ item.maintenance_status }}
+                    </span>
+                </td>
+                <td>
+                    <form method="POST"
+                          action="{{ url_for('complete_maintenance', equipment_id=item.id) }}">
+                        <input type="text"
+                               name="description"
+                               placeholder="Work completed"
+                               required>
+                        <button type="submit" class="button button-primary">
+                            Complete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="panel" style="margin-top:24px;">
+    <h2>Maintenance History</h2>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Usage at Service</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for log in logs %}
+                <tr>
+                    <td>{{ log.equipment_code }} - {{ log.name }}</td>
+                    <td>{{ log.maintenance_date }}</td>
+                    <td>{{ log.description }}</td>
+                    <td>{{ log.usage_at_service or 0 }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4">No maintenance history yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

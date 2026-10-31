@@ -1,0 +1,94 @@
+
+{% extends "base.html" %}
+
+{% block title %}Downtime Log | PlantCare{% endblock %}
+{% block page_name %}Downtime Log{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">BREAKDOWN MANAGEMENT</p>
+        <h1>Downtime Log</h1>
+        <p class="subtitle">Record breakdowns, downtime and corrective actions.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:24px;">
+    <h2>Record a Breakdown</h2>
+
+    <form method="POST" class="form-grid">
+        <div>
+            <label>Equipment</label>
+            <select name="equipment_id" required>
+                <option value="">Select equipment</option>
+                {% for item in equipment %}
+                    <option value="{{ item.id }}">
+                        {{ item.equipment_code }} - {{ item.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Problem Description</label>
+            <input type="text" name="problem"
+                   placeholder="e.g. Motor overheating" required>
+        </div>
+
+        <div>
+            <label>Downtime (minutes)</label>
+            <input type="number" name="downtime_minutes"
+                   min="0" required>
+        </div>
+
+        <div>
+            <label>Corrective Action</label>
+            <input type="text" name="corrective_action"
+                   placeholder="Action taken">
+        </div>
+
+        <div>
+            <button class="button button-primary" type="submit">
+                Save Breakdown
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="section-heading">
+    <div>
+        <h2>Breakdown History</h2>
+        <p>Recorded equipment downtime</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Equipment</th>
+                <th>Problem</th>
+                <th>Downtime</th>
+                <th>Corrective Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for log in records %}
+            <tr>
+                <td>{{ log.breakdown_date }}</td>
+                <td>{{ log.equipment_code }} - {{ log.name }}</td>
+                <td>{{ log.problem }}</td>
+                <td>{{ log.downtime_minutes }} min</td>
+                <td>{{ log.corrective_action or "Not recorded" }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">No breakdown records available.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+
+{% extends "base.html" %}
+
+{% block title %}Spare Parts | PlantCare{% endblock %}
+{% block page_name %}Spare Parts Inventory{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">INVENTORY MANAGEMENT</p>
+        <h1>Spare Parts Inventory</h1>
+        <p class="subtitle">Track spare parts and identify replenishment needs.</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Part ID</th>
+                <th>Part Name</th>
+                <th>Equipment</th>
+                <th>Current Stock</th>
+                <th>Minimum Stock</th>
+                <th>Status</th>
+                <th>Update Stock</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for part in parts %}
+            <tr>
+                <td><strong>{{ part.part_code }}</strong></td>
+                <td>{{ part.name }}</td>
+                <td>{{ part.equipment_code }}</td>
+                <td>{{ part.quantity }}</td>
+                <td>{{ part.minimum_stock }}</td>
+                <td>
+                    {% if part.quantity == 0 %}
+                        <span class="badge badge-danger">OUT OF STOCK</span>
+                    {% elif part.quantity < part.minimum_stock %}
+                        <span class="badge badge-warning">LOW STOCK</span>
+                    {% else %}
+                        <span class="badge badge-success">IN STOCK</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST"
+                          action="{{ url_for('update_spare', part_id=part.id) }}">
+                        <input type="number" name="quantity"
+                               min="0" value="{{ part.quantity }}" required>
+                        <button class="button button-primary" type="submit">
+                            Save
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

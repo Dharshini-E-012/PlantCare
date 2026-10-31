@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | PlantCare{% endblock %}
+{% block page_name %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">OVERVIEW</p>
+        <h1>Operations Dashboard</h1>
+        <p class="subtitle">
+            Monitor equipment health, maintenance schedules and calibration.
+        </p>
+    </div>
+
+    <div class="date-badge">
+        <span>TEST DATE</span>
+        <strong>{{ test_date }}</strong>
+    </div>
+</div>
+
+<div class="alert-banner">
+    <div class="alert-icon">!</div>
+    <div>
+        <strong>Equipment compliance monitoring</strong>
+        <p>
+            Review expired calibrations, overdue maintenance and inventory alerts
+            before planning production.
+        </p>
+    </div>
+</div>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Total Equipment</span>
+            <div class="stat-icon blue">⚙</div>
+        </div>
+        <h2>{{ total }}</h2>
+        <p class="stat-description">Registered assets</p>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Maintenance Overdue</span>
+            <div class="stat-icon orange">◷</div>
+        </div>
+        <h2>{{ overdue }}</h2>
+        <p class="stat-description">Requires maintenance review</p>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Calibration Expired</span>
+            <div class="stat-icon red">!</div>
+        </div>
+        <h2>{{ expired }}</h2>
+        <p class="stat-description">Outside calibration validity</p>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Production Blocked</span>
+            <div class="stat-icon purple">⊘</div>
+        </div>
+        <h2>{{ blocked }}</h2>
+        <p class="stat-description">Fails calibration release check</p>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <span>Parts Out of Stock</span>
+            <div class="stat-icon red">▤</div>
+        </div>
+        <h2>{{ out_of_stock }}</h2>
+        <p class="stat-description">Replenishment required</p>
+    </div>
+
+</div>
+
+<div class="section-heading">
+    <div>
+        <h2>Equipment Status</h2>
+        <p>Maintenance and calibration overview</p>
+    </div>
+
+    <a class="button button-primary"
+       href="{{ url_for('equipment_register') }}">
+        View Register →
+    </a>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Equipment</th>
+                <th>Type</th>
+                <th>Maintenance Plan</th>
+                <th>Maintenance Status</th>
+                <th>Calibration</th>
+                <th>Production</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in equipment %}
+            <tr>
+                <td>
+                    <div class="equipment-name">
+                        <strong>{{ item.equipment_code }}</strong>
+                        <span>{{ item.name }}</span>
+                    </div>
+                </td>
+
+                <td>{{ item.category }}</td>
+
+                <td>
+                    {% if item.maintenance_type == "TIME" %}
+                        Every {{ item.maintenance_interval|int }} days
+                    {% else %}
+                        Every {{ item.maintenance_interval|int }} usage units
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="badge
+                        {% if item.maintenance_status == 'OVERDUE' %}
+                            badge-danger
+                        {% elif item.maintenance_status == 'DUE SOON' %}
+                            badge-warning
+                        {% else %}
+                            badge-success
+                        {% endif %}">
+                        {{ item.maintenance_status }}
+                    </span>
+                </td>
+
+                <td>
+                    {% if item.calibration_status == "EXPIRED" %}
+                        <span class="badge badge-danger">EXPIRED</span>
+                    {% elif item.calibration_status == "VALID" %}
+                        <span class="badge badge-success">VALID</span>
+                    {% else %}
+                        <span class="muted">Not required</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item.production_status == "BLOCKED" %}
+                        <span class="badge badge-danger">BLOCKED</span>
+                    {% else %}
+                        <span class="badge badge-success">ELIGIBLE*</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="footnote">
+    *Eligible indicates that the calibration check passes.
+    Other production release requirements must also be satisfied.
+</p>
+
+<div class="bottom-grid">
+
+    <div class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Spare Parts Inventory</h2>
+                <p>Current stock levels</p>
+            </div>
+
+            <a href="{{ url_for('spares') }}">View all →</a>
+        </div>
+
+        {% for part in spares %}
+        <div class="inventory-row">
+            <div>
+                <strong>{{ part.name }}</strong>
+                <small>{{ part.part_code }} · {{ part.equipment_code }}</small>
+            </div>
+
+            <div class="inventory-stock">
+                <strong>{{ part.quantity }}</strong>
+
+                {% if part.quantity == 0 %}
+                    <span class="badge badge-danger">OUT OF STOCK</span>
+                {% elif part.quantity < part.minimum_stock %}
+                    <span class="badge badge-warning">LOW STOCK</span>
+                {% else %}
+                    <span class="badge badge-success">IN STOCK</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Recent Downtime</h2>
+                <p>Latest recorded breakdowns</p>
+            </div>
+
+            <a href="{{ url_for('downtime') }}">View all →</a>
+        </div>
+
+        {% for log in downtime %}
+        <div class="downtime-row">
+            <div class="timeline-dot"></div>
+
+            <div class="downtime-details">
+                <strong>{{ log.equipment_code }} · {{ log.problem }}</strong>
+                <small>
+                    {{ log.breakdown_date }} · {{ log.name }}
+                </small>
+                <p>{{ log.downtime_minutes }} minutes downtime</p>
+            </div>
+        </div>
+        {% else %}
+            <p class="empty-state">No downtime records available.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

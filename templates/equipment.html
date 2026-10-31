@@ -1,0 +1,83 @@
+
+{% extends "base.html" %}
+
+{% block title %}Equipment Register | PlantCare{% endblock %}
+{% block page_name %}Equipment Register{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">ASSET MANAGEMENT</p>
+        <h1>Equipment Register</h1>
+        <p class="subtitle">Monitor equipment maintenance and production eligibility.</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Equipment ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Maintenance Plan</th>
+                <th>Next Maintenance</th>
+                <th>Calibration</th>
+                <th>Production</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for item in equipment %}
+            <tr>
+                <td><strong>{{ item.equipment_code }}</strong></td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.category }}</td>
+                <td>
+                    {% if item.maintenance_type == "TIME" %}
+                        Every {{ item.maintenance_interval|int }} days
+                    {% else %}
+                        Every {{ item.maintenance_interval|int }} usage units
+                    {% endif %}
+                </td>
+                <td>{{ item.next_maintenance_date }}</td>
+                <td>
+                    <span class="badge
+                    {% if item.calibration_status == 'EXPIRED' %}
+                        badge-danger
+                    {% elif item.calibration_status == 'VALID' %}
+                        badge-success
+                    {% else %}
+                        badge-warning
+                    {% endif %}">
+                        {{ item.calibration_status }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge
+                    {% if item.production_status == 'BLOCKED' %}
+                        badge-danger
+                    {% else %}
+                        badge-success
+                    {% endif %}">
+                        {{ item.production_status }}
+                    </span>
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('production_check') }}">
+                        <input type="hidden" name="equipment_id" value="{{ item.id }}">
+                        <button class="button button-primary" type="submit">
+                            Check
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+

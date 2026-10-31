@@ -1,0 +1,90 @@
+
+{% extends "base.html" %}
+
+{% block title %}Calibration | PlantCare{% endblock %}
+{% block page_name %}Calibration Management{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">QUALITY & COMPLIANCE</p>
+        <h1>Calibration Management</h1>
+        <p class="subtitle">Monitor calibration validity and update instrument records.</p>
+    </div>
+</div>
+
+<div class="alert-banner">
+    <div class="alert-icon">!</div>
+    <div>
+        <strong>Calibration control</strong>
+        <p>Expired calibration prevents production release for the affected instrument.</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Instrument</th>
+                <th>Last Calibration</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Production</th>
+                <th>Renew Record</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for item in instruments %}
+            <tr>
+                <td>
+                    <strong>{{ item.equipment_code }}</strong><br>
+                    {{ item.name }}
+                </td>
+                <td>{{ item.last_calibration_date }}</td>
+                <td>{{ item.calibration_expiry_date }}</td>
+                <td>
+                    <span class="badge
+                    {% if item.calibration_status == 'EXPIRED' %}
+                        badge-danger
+                    {% else %}
+                        badge-success
+                    {% endif %}">
+                        {{ item.calibration_status }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge
+                    {% if item.production_status == 'BLOCKED' %}
+                        badge-danger
+                    {% else %}
+                        badge-success
+                    {% endif %}">
+                        {{ item.production_status }}
+                    </span>
+                </td>
+                <td>
+                    <form method="POST"
+                          action="{{ url_for('renew_calibration', equipment_id=item.id) }}">
+                        <input type="date"
+                               name="expiry_date"
+                               min="2026-11-01"
+                               required>
+                        <button class="button button-primary" type="submit">
+                            Update
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="footnote">
+    Update a calibration record only after the required calibration has been
+    completed and its certificate or result has been verified.
+</p>
+
+{% endblock %}
